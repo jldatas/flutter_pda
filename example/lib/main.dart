@@ -32,6 +32,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   FlutterPda _flutterPda = FlutterPda();
+  StreamSubscription _flutterPdaStateSubscription;
 
   String _code = 'code';
   bool _isSound;
@@ -41,8 +42,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _flutterPda.onPdaStateChanged.listen((code) {
-      print(code);
+    // 监听PDA
+    _flutterPdaStateSubscription = _flutterPda.onPdaStateChanged.listen((code) {
       setState(() {
         _code = code;
       });
@@ -50,6 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _initFlutterPda();
   }
 
+  // 初始化PDA
   Future _initFlutterPda() async {
     bool isSound = await _flutterPda.isSoundPlay;
     bool isVibrate = await _flutterPda.isVibrate;
@@ -61,6 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // 设置声音
   Future _onSoundPlay(isSound) async {
     setState(() {
       _isSound = isSound;
@@ -68,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await _flutterPda.setSoundPlay(isSound);
   }
 
+  // 设置振动
   Future _onVibrate(isVibrate) async {
     setState(() {
       _isVibrate = isVibrate;
@@ -75,6 +79,12 @@ class _MyHomePageState extends State<MyHomePage> {
     await _flutterPda.setVibrate(isVibrate);
   }
 
+  // 设置条形码发送方式
+  // 参数: sendMode
+  //  1、焦点录入(FOCUS)
+  //  2、焦点(BROADCAST)
+  //  3、模拟按键(EMUKEY)
+  //  4、剪切板(CLIPBOARD)
   Future _onSendMode(sendMode) async {
     setState(() {
       _sendMode = sendMode;
@@ -128,5 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     super.dispose();
+    // 取消PDA
+    if(_flutterPdaStateSubscription != null) {
+      _flutterPdaStateSubscription.cancel();
+    }
   }
 }

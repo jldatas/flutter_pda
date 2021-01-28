@@ -1,8 +1,7 @@
 name: flutter_pda
 description: Flutter PDA plugin.
 version: 0.0.1
-author:
-homepage:
+homepage: https://github.com/jldatas/flutter_pda.git
 
 flutter:
   plugin:
