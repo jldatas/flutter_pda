@@ -22,9 +22,13 @@ public class FlutterPdaPlugin implements MethodCallHandler, StreamHandler, Flutt
   private BroadcastReceiver chargingStateChangeReceiver;
   private MethodChannel methodChannel;
   private EventChannel eventChannel;
-  private String scanAction = "com.jingling.flutter_pda";// 定义广播名
 
-  Intent _intent = new Intent("com.android.scanner.service_settings");
+  private static final String SEUIC_SCAN_ACTION = "com.android.scanner.service_settings";
+  private static final String IDATA_SCAN_ACTION = "android.intent.action.SCANRESULT";
+
+  String action_name = IDATA_SCAN_ACTION;
+
+  Intent _intent = new Intent(SEUIC_SCAN_ACTION);
 
   /**
    * Plugin registration.
@@ -69,7 +73,6 @@ public class FlutterPdaPlugin implements MethodCallHandler, StreamHandler, Flutt
         setSoundPlay(isSound);
         break;
       case "getVibrate":
-        System.out.print(getVibrate());
         result.success(getVibrate());
         break;
       case "setVibrate":
@@ -93,8 +96,8 @@ public class FlutterPdaPlugin implements MethodCallHandler, StreamHandler, Flutt
   public void onListen(Object arguments, EventSink events) {
     chargingStateChangeReceiver = createChargingStateChangeReceiver(events);
     applicationContext.registerReceiver(
-            chargingStateChangeReceiver, new IntentFilter(scanAction));
-    initBoardCast();
+            chargingStateChangeReceiver, new IntentFilter(action_name));
+//    initBoardCast();
   }
 
   @Override
@@ -107,17 +110,19 @@ public class FlutterPdaPlugin implements MethodCallHandler, StreamHandler, Flutt
     return new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(scanAction)) {
-          String code = intent.getStringExtra("scannerdata");
-          events.success(code);
+        String actionName = intent.getAction();
+        if (IDATA_SCAN_ACTION.equals(actionName)) {
+          events.success(intent.getStringExtra("value"));
+        } else if(SEUIC_SCAN_ACTION.equals(actionName)) {
+          events.success(intent.getStringExtra("scannerdata"));
         }
       }
     };
   }
   
-  private void initBoardCast() {
+  private void initBoardCast(String actionName) {
     //修改广播名称：修改扫描工具广播名，接收广播时也是这个广播名
-    _intent.putExtra("action_barcode_broadcast", scanAction);
+    _intent.putExtra("action_barcode_broadcast", actionName);
     //条码发送方式：广播；其他设置看文档
     _intent.putExtra("barcode_send_mode","BROADCAST");
     //键值，一般不改
