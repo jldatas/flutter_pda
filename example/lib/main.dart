@@ -35,6 +35,9 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription _flutterPdaStateSubscription;
 
   String _code = 'code';
+  bool _isSound;
+  bool _isVibrate;
+  String _sendMode;
 
   @override
   void initState() {
@@ -45,6 +48,48 @@ class _MyHomePageState extends State<MyHomePage> {
         _code = code;
       });
     });
+    _initFlutterPda();
+  }
+
+  // 初始化PDA
+  Future _initFlutterPda() async {
+    bool isSound = await _flutterPda.isSoundPlay;
+    bool isVibrate = await _flutterPda.isVibrate;
+    String sendMode = await _flutterPda.sendMode;
+    setState(() {
+      _isSound = isSound;
+      _isVibrate = isVibrate;
+      _sendMode = sendMode;
+    });
+  }
+
+  // 设置声音
+  Future _onSoundPlay(isSound) async {
+    setState(() {
+      _isSound = isSound;
+    });
+    await _flutterPda.setSoundPlay(isSound);
+  }
+
+  // 设置振动
+  Future _onVibrate(isVibrate) async {
+    setState(() {
+      _isVibrate = isVibrate;
+    });
+    await _flutterPda.setVibrate(isVibrate);
+  }
+
+  // 设置条形码发送方式
+  // 参数: sendMode
+  //  1、焦点录入(FOCUS)
+  //  2、焦点(BROADCAST)
+  //  3、模拟按键(EMUKEY)
+  //  4、剪切板(CLIPBOARD)
+  Future _onSendMode(sendMode) async {
+    setState(() {
+      _sendMode = sendMode;
+    });
+    await _flutterPda.setSendMode(sendMode);
   }
 
   @override
@@ -55,7 +100,36 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(children: [
-          Padding(padding: EdgeInsets.only(top: 20), child: Text(_code),),
+          Row(children: [
+            Text('扫描声音'),
+            Switch(value: _isSound, onChanged: _onSoundPlay)
+          ],),
+          Row(children: [
+            Text('振动'),
+            Switch(value: _isVibrate, onChanged: _onVibrate)
+          ],),
+          Row(children: [
+            Text('条码发送方式'),
+          ],),
+          Column(children: [
+            Row(children: [
+              Radio(value: "FOCUS", groupValue: _sendMode, onChanged: _onSendMode),
+              Text('焦点录入'),
+            ],),
+            Row(children: [
+              Radio(value: "BROADCAST", groupValue: _sendMode, onChanged: _onSendMode),
+              Text('广播'),
+            ],),
+            Row(children: [
+              Radio(value: "EMUKEY", groupValue: _sendMode, onChanged: _onSendMode),
+              Text('模拟按键'),
+            ],),
+            Row(children: [
+              Radio(value: "CLIPBOARD", groupValue: _sendMode, onChanged: _onSendMode),
+              Text('剪切板'),
+            ],),
+          ],),
+          Padding(padding: EdgeInsets.only(top: 0), child: Text(_code),),
         ],),
       ),
     );

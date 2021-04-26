@@ -7,7 +7,7 @@ class FlutterPda {
   static const MethodChannel _channel =
       const MethodChannel('flutter_pda/method');
 
-  static const EventChannel _eventChannel = const EventChannel('flutter_pda/event');
+  static const EventChannel _eventChannel = const EventChannel('flutter_pda/event_channel');
 
   Future<bool> get isSoundPlay async => await _channel.invokeMethod("getSoundPlay");
 
@@ -44,8 +44,7 @@ class FlutterPda {
   Stream onPdaChanged() {
     if (_onPdaStateChanged == null) {
       _onPdaStateChanged = _eventChannel
-          .receiveBroadcastStream()
-          .map((dynamic event) => event);
+          .receiveBroadcastStream();
     }
     return _onPdaStateChanged;
   }
